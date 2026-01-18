@@ -1,65 +1,96 @@
-class Solution {
+class DisjointSet {
 public:
-    int n;
-    vector<vector<int>> grid;
-    unordered_map<int, int> islandSize;
-    int dirs[4][2] = {{1,0},{-1,0},{0,1},{0,-1}};
+    vector<int> parent, size;
 
-    int dfs(int r, int c, int id) {
-        if (r < 0 || c < 0 || r >= n || c >= n || grid[r][c] != 1)
-            return 0;
-
-        grid[r][c] = id;
-        int size = 1;
-
-        for (auto &d : dirs)
-            size += dfs(r + d[0], c + d[1], id);
-
-        return size;
+    DisjointSet(int n) {
+        parent.resize(n);
+        size.resize(n, 1);
+        for (int i = 0; i < n; i++)
+            parent[i] = i;
     }
 
-    int largestIsland(vector<vector<int>>& gridInput) {
-        grid = gridInput;
-        n = grid.size();
-        int id = 2;   
+    int findUpar(int node) {
+        if (node == parent[node])
+            return node;
+        return parent[node] = findUpar(parent[node]);
+    }
 
-        // Step 1: Label islands
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (grid[i][j] == 1) {
-                    islandSize[id] = dfs(i, j, id);
-                    id++;
-                }
-            }
+    void UnionBySize(int u, int v) {
+        int pu = findUpar(u);
+        int pv = findUpar(v);
+
+        if (pu == pv) return;
+
+        if (size[pu] < size[pv]) {
+            parent[pu] = pv;
+            size[pv] += size[pu];
+        } else {
+            parent[pv] = pu;
+            size[pu] += size[pv];
         }
+    }
+};
 
-        int maxIsland = 0;
+class Solution {
+private:
+    bool isValid(int r, int c, int n) {
+        return r >= 0 && r < n && c >= 0 && c < n;
+    }
 
-        // Step 2: Try flipping each 0
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (grid[i][j] == 0) {
-                    unordered_set<int> seen;
-                    int size = 1;
+public:
+    int largestIsland(vector<vector<int>>& grid) {
+        int n = grid.size();
+        DisjointSet ds(n * n);
 
-                    for (auto &d : dirs) {
-                        int x = i + d[0], y = j + d[1];
-                        if (x >= 0 && y >= 0 && x < n && y < n && grid[x][y] > 1) {
-                            if (!seen.count(grid[x][y])) {
-                                size += islandSize[grid[x][y]];
-                                seen.insert(grid[x][y]);
-                            }
-                        }
+        int dr[4] = {-1, 0, 1, 0};
+        int dc[4] = {0, -1, 0, 1};
+
+        // STEP 1: Union all existing 1s
+        for (int r = 0; r < n; r++) {
+            for (int c = 0; c < n; c++) {
+                if (grid[r][c] == 0) continue;
+
+                for (int i = 0; i < 4; i++) {
+                    int nr = r + dr[i];
+                    int nc = c + dc[i];
+                    if (isValid(nr, nc, n) && grid[nr][nc] == 1) {
+                        int node = r * n + c;
+                        int adjNode = nr * n + nc;
+                        ds.UnionBySize(node, adjNode);
                     }
-                    maxIsland = max(maxIsland, size);
                 }
             }
         }
 
-        // Step 3: If no 0 found
-        if (maxIsland == 0)
-            return n * n;
+        // STEP 2: Try flipping each 0
+        int mx = 0;
+        for (int r = 0; r < n; r++) {
+            for (int c = 0; c < n; c++) {
+                if (grid[r][c] == 1) continue;
 
-        return maxIsland;
+                set<int> components;
+                for (int i = 0; i < 4; i++) {
+                    int nr = r + dr[i];
+                    int nc = c + dc[i];
+                    if (isValid(nr, nc, n) && grid[nr][nc] == 1) {
+                        components.insert(ds.findUpar(nr * n + nc));
+                    }
+                }
+
+                int totalSize = 1;
+                for (auto it : components) {
+                    totalSize += ds.size[it];
+                }
+
+                mx = max(mx, totalSize);
+            }
+        }
+
+        // STEP 3: If grid has no zero
+        for (int i = 0; i < n * n; i++) {
+            mx = max(mx, ds.size[ds.findUpar(i)]);
+        }
+
+        return mx;
     }
 };
