@@ -10,48 +10,53 @@
  */
 class Solution {
 public:
-    ListNode* findMiddle(ListNode* head) {
+    ListNode* findmiddle(ListNode* head){
         ListNode* slow = head;
         ListNode* fast = head->next;
-        while (fast != NULL && fast->next != NULL) {
+        while(fast != NULL && fast->next != NULL){
             slow = slow->next;
-            fast = fast->next->next; 
+            fast = fast->next->next;
         }
         return slow;
     }
-
-    ListNode* merge(ListNode* list1, ListNode* list2) {
+    ListNode* mergeTwoLists(ListNode* left, ListNode* right){
         ListNode* dummyNode = new ListNode(-1);
         ListNode* temp = dummyNode;
-
-        while (list1 != NULL && list2 != NULL) {
-            if (list1->val < list2->val) {
-                temp->next = list1;
-                list1 = list1->next;
-            } else {
-                temp->next = list2;
-                list2 = list2->next;
+        while(left != NULL && right != NULL){
+            if(left->val < right->val){
+                temp->next = left;
+                temp = left;
+                left = left->next;
             }
-            temp = temp->next;
+            else{
+                temp->next = right;
+                temp = right;
+                right = right->next;
+            }
+        }
+        if(left){
+            temp->next = left;
+        }
+        else{
+            temp->next = right;
         }
 
-        if (list1) temp->next = list1;
-        else temp->next = list2;
-
         return dummyNode->next;
+
     }
-
     ListNode* sortList(ListNode* head) {
-        if (head == NULL || head->next == NULL)
+        if(head == NULL || head->next == NULL){
             return head;
+        }
 
-        ListNode* middle = findMiddle(head);
+        ListNode* middle = findmiddle(head);
         ListNode* right = middle->next;
         middle->next = NULL;
+        ListNode* left = head;
 
-        ListNode* left = sortList(head);
+        left = sortList(left);
         right = sortList(right);
 
-        return merge(left, right);
+        return mergeTwoLists(left, right);
     }
 };
