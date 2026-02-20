@@ -10,7 +10,7 @@
  */
 class Solution {
 public:
-    ListNode* findNthNode(ListNode* temp, int k){
+     ListNode* findNthNode(ListNode* temp, int k){
         int cnt = 1;
         while(temp != NULL){
             if(cnt == k){
@@ -21,6 +21,7 @@ public:
         }
         return temp;
     }
+    
     ListNode* rotateRight(ListNode* head, int k) {
         if(head == NULL || k == 0){
             return head;
