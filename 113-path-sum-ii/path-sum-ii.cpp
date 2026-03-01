@@ -15,13 +15,13 @@ public:
              vector<int>& path, 
              vector<vector<int>>& result) {
         
-        if(!root) return;
+        if(root == NULL) return;
 
         
         path.push_back(root->val);
 
      
-        if(!root->left && !root->right && targetSum == root->val) {
+        if(root->left == NULL && root->right == NULL && targetSum == root->val) {
             result.push_back(path);
         }
 
